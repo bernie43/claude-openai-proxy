@@ -118,17 +118,10 @@ If everything went well, you'll see the message: **"You are successfully authent
 
 ### 3. Verify the connection
 
-1. In the models list, you should see the available Claude models:
-
-   - claude-3.7-sonnet
-   - claude-4-opus
-   - claude-4-sonnet
-   - gpt-4.1
-   - o3
-   - o4-mini
-   - And more...
+1. In the models list, you should see the available Claude models
 
 2. Select your preferred model
+
 3. Try typing something in Cursor's chat
 
 ## ✅ That's it!
