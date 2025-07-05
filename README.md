@@ -50,12 +50,11 @@ graph LR
 
 ## 🚀 Quick Installation
 
-### Prerequisites
+### 📖 Complete Setup Guide
 
-- [Bun](https://bun.sh) installed
-- Active Claude Max subscription (logged in at claude.ai)
+For detailed instructions with screenshots on how to deploy and configure this proxy, please see our **[Deployment Guide](DEPLOYMENT.md)**.
 
-### Steps
+### Quick Start
 
 1. **Clone the repository**
 
@@ -64,30 +63,21 @@ graph LR
    cd cursor-claude-connector
    ```
 
-2. **Install dependencies**
+2. **Run the start script**
 
    ```bash
-   bun install
-   ```
-
-3. **Ensure you're logged into Claude**
-
-   - Open [claude.ai](https://claude.ai) in your browser
-   - Make sure you're logged in with your Claude Max subscription
-
-4. **Start the server**
-
-   ```bash
-   bun run start
-   # or using the script
    ./start.sh
    ```
 
-5. **Configure Cursor**
+3. **Authenticate with Claude**
+
+   - Open `http://your-server-ip:9095/` in your browser
+   - Follow the authentication process
+
+4. **Configure Cursor**
    - Go to Settings → Models
-   - Add a custom model
-   - URL: `http://localhost:3000/v1`
-   - Model: `claude-4-opus` (or your preferred model)
+   - Enable "Override OpenAI Base URL"
+   - Enter: `http://your-server-ip:9095/v1`
 
 ## 🎉 Advantages of this solution
 

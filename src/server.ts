@@ -39,11 +39,6 @@ app.use('*', corsMiddleware)
 
 app.get('/', serveStatic({ path: './src/public/index.html' }))
 
-// Redirect /auth/login to the UI page
-app.get('/auth/login', async (c: Context) => {
-  return c.redirect('/auth/auth.html')
-})
-
 // New OAuth start endpoint for UI
 app.post('/auth/oauth/start', async (c: Context) => {
   try {
