@@ -387,7 +387,15 @@ app.post('/v1/chat/completions', async (c: Context) => {
 
 const port = process.env.PORT || 9095
 
-serve({
-  fetch: app.fetch,
-  port: Number(port),
-})
+// Export app for Vercel
+export default app
+
+// Only start server if not in Vercel environment
+if (!process.env.VERCEL) {
+  serve({
+    fetch: app.fetch,
+    port: Number(port),
+  })
+
+  console.log(`🚀 Server is running on http://localhost:${port}`)
+}

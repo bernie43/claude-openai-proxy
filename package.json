@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "start:dev": "tsx watch src/server.ts",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "vercel-build": "npm run build"
   },
   "keywords": [
     "cursor",
@@ -28,6 +29,7 @@
   "license": "MIT",
   "dependencies": {
     "@hono/node-server": "^1.14.1",
+    "@upstash/redis": "^1.35.1",
     "hono": "^4.8.3"
   },
   "devDependencies": {

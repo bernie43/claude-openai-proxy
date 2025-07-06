@@ -50,34 +50,60 @@ graph LR
 
 ## 🚀 Quick Installation
 
-### 📖 Complete Setup Guide
+### 🔥 One-Click Deploy to Vercel
 
-For detailed instructions with screenshots on how to deploy and configure this proxy, please see our **[Deployment Guide](DEPLOYMENT.md)**.
+Deploy instantly with Upstash Redis integration:
 
-### Quick Start
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Maol-1997/cursor-claude-connector&integration-ids=oac_V3R1GIpkoJorr6fqyiwdhl17)
+
+<!-- The integration-ids parameter includes Upstash's official Vercel integration ID for automatic Redis setup -->
+
+This will:
+
+- ✅ Deploy the proxy to Vercel
+- ✅ Automatically create an Upstash Redis database
+- ✅ Configure all environment variables
+- ✅ Get you running in under 2 minutes!
+
+### 📖 Manual Setup Guide
+
+For detailed instructions or alternative deployment methods, see our **[Deployment Guide](DEPLOYMENT.md)**.
+
+### Local Development
 
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/cursor-claude-connector.git
+   git clone https://github.com/Maol-1997/cursor-claude-connector.git
    cd cursor-claude-connector
    ```
 
-2. **Run the start script**
+2. **Set up Upstash Redis**
+
+   - Create a free Redis database at [Upstash Console](https://console.upstash.com/)
+   - Copy your REST URL and REST Token
+   - Copy `env.example` to `.env` and update with your values:
+
+   ```bash
+   cp env.example .env
+   # Edit .env with your Upstash credentials
+   ```
+
+3. **Run the start script**
 
    ```bash
    ./start.sh
    ```
 
-3. **Authenticate with Claude**
+4. **Authenticate with Claude**
 
-   - Open `http://your-server-ip:9095/` in your browser
+   - Open `http://localhost:9095/` in your browser
    - Follow the authentication process
 
-4. **Configure Cursor**
+5. **Configure Cursor**
    - Go to Settings → Models
    - Enable "Override OpenAI Base URL"
-   - Enter: `http://your-server-ip:9095/v1`
+   - Enter: `http://localhost:9095/v1` (for local) or `https://your-app.vercel.app/v1` (for Vercel)
 
 ## 🎉 Advantages of this solution
 

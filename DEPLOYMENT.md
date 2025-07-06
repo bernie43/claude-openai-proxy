@@ -4,18 +4,36 @@ This guide will help you connect Cursor with your Claude subscription using this
 
 ## 📋 Prerequisites
 
-1. **Server** with:
+1. **Active Claude subscription** (Pro or Max)
+2. **Cursor IDE** installed on your local machine
+3. **GitHub account** (for Vercel deployment)
 
-   - Public IP address
-   - Port 9095 available (or custom port)
+## 🚀 Deployment Options
 
-2. **Active Claude subscription** (Pro or Max)
+### Option 1: Deploy to Vercel (Recommended) ⚡
 
-3. **Cursor IDE** installed on your local machine
+The easiest way to get started is with our one-click Vercel deployment:
 
-## 🔧 Quick Setup
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Maol-1997/cursor-claude-connector&integration-ids=oac_V3R1GIpkoJorr6fqyiwdhl17)
 
-### 1. Install Bun
+#### What happens when you click:
+
+1. **Fork the repository** - Vercel will create a copy in your GitHub account
+2. **Create Upstash Redis** - Automatically provisions a free Redis database
+3. **Configure environment** - All variables are set up automatically
+4. **Deploy the app** - Your proxy will be live in under 2 minutes!
+
+#### After deployment:
+
+1. Note your deployment URL (e.g., `https://your-app-name.vercel.app`)
+2. Visit `https://your-app-name.vercel.app/` to authenticate with Claude
+3. Configure Cursor with: `https://your-app-name.vercel.app/v1`
+
+### Option 2: Manual Server Deployment
+
+If you prefer to deploy on your own server:
+
+#### 1. Install Bun
 
 ```bash
 # Install Bun
@@ -23,13 +41,27 @@ curl -fsSL https://bun.sh/install | bash
 source ~/.bashrc
 ```
 
-### 2. Clone and start the project
+#### 2. Clone and configure
 
 ```bash
 # Clone the repository
 git clone https://github.com/Maol-1997/cursor-claude-connector.git
 cd cursor-claude-connector
 
+# Set up environment variables
+cp env.example .env
+# Edit .env with your Upstash Redis credentials
+```
+
+#### 3. Set up Upstash Redis
+
+1. Create a free account at [Upstash Console](https://console.upstash.com/)
+2. Create a new Redis database
+3. Copy the REST URL and REST Token to your `.env` file
+
+#### 4. Start the server
+
+```bash
 # Run the start script (default port: 9095)
 ./start.sh
 
@@ -41,7 +73,7 @@ The script will:
 
 - Install dependencies automatically
 - Build the project
-- Start the server on port 9095 (or your custom port)
+- Start the server on your specified port
 
 ## 🔐 Claude Authentication
 
@@ -97,21 +129,23 @@ If everything went well, you'll see the message: **"You are successfully authent
 1. Enable **"Override OpenAI Base URL"**
 2. In the URL field, enter:
 
+   **For Vercel deployment:**
+
+   ```
+   https://your-app-name.vercel.app/v1
+   ```
+
+   **For manual server deployment:**
+
    ```
    http://your-server-ip:9095/v1
    ```
 
-   Or with custom port:
+   Examples:
 
    ```
-   http://your-server-ip:YOUR_PORT/v1
-   ```
-
-   For example:
-
-   ```
+   https://cursor-claude-proxy.vercel.app/v1
    http://54.123.45.67:9095/v1
-   http://54.123.45.67:3000/v1
    ```
 
 ![Cursor Custom URL Configuration](images/cursor-custom-url.webp)

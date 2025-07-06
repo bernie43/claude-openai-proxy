@@ -110,7 +110,7 @@ export async function exchangeCodeForTokens(
   const data = (await response.json()) as TokenResponse
 
   // Save tokens
-  await authManager.set('anthropic', {
+  await authManager.set({
     type: 'oauth',
     refresh: data.refresh_token,
     access: data.access_token,
@@ -152,7 +152,7 @@ export async function handleOAuthCallback(
 export async function login(): Promise<boolean> {
   try {
     // Check if we already have valid credentials
-    const existing = await authManager.get('anthropic')
+    const existing = await authManager.get()
     if (existing && existing.access && existing.expires > Date.now()) {
       console.log('✅ Valid OAuth credentials already exist')
       return true
@@ -169,7 +169,7 @@ export async function login(): Promise<boolean> {
 
 export async function logout(): Promise<boolean> {
   try {
-    await authManager.remove('anthropic')
+    await authManager.remove()
     console.log('✅ OAuth credentials removed')
     return true
   } catch (error) {
