@@ -1,5 +1,4 @@
 import { Hono, Context } from 'hono'
-import { serve } from '@hono/node-server'
 import { stream } from 'hono/streaming'
 import { getAccessToken } from './auth/oauth-manager'
 import {
@@ -27,7 +26,7 @@ import type {
   ModelInfo,
 } from './types'
 
-import { serveStatic } from '@hono/node-server/serve-static'
+// Static files are served by Vercel, not needed here
 
 const app = new Hono()
 
@@ -37,7 +36,7 @@ app.options('*', corsPreflightHandler)
 // Also add CORS headers to all responses
 app.use('*', corsMiddleware)
 
-app.get('/', serveStatic({ path: './src/public/index.html' }))
+// Root route is handled by Vercel serving public/index.html
 
 // New OAuth start endpoint for UI
 app.post('/auth/oauth/start', async (c: Context) => {
@@ -390,12 +389,4 @@ const port = process.env.PORT || 9095
 // Export app for Vercel
 export default app
 
-// Only start server if not in Vercel environment
-if (!process.env.VERCEL) {
-  serve({
-    fetch: app.fetch,
-    port: Number(port),
-  })
-
-  console.log(`🚀 Server is running on http://localhost:${port}`)
-}
+// Server is started differently for local development vs Vercel
