@@ -236,33 +236,39 @@ app.post('/v1/chat/completions', async (c: Context) => {
         text: "You are Claude Code, Anthropic's official CLI for Claude.",
       })
 
-      body.max_tokens = 32_000
+      if (body.model.includes('opus')) {
+        body.max_tokens = 32_000
+      }
+      if (body.model.includes('sonnet')) {
+        body.max_tokens = 64_000
+      }
     }
+
+    const oauthToken = await getAccessToken()
+
+    if (!oauthToken) {
+      return c.json<ErrorResponse>(
+        {
+          error: 'Authentication required',
+          message:
+            'Please authenticate using OAuth first. Visit /auth/login for instructions.',
+        },
+        401,
+      )
+    }
+
+    headers = {
+      'content-type': 'application/json',
+      authorization: `Bearer ${oauthToken}`,
+      'anthropic-beta':
+        'oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14',
+      'anthropic-version': '2023-06-01',
+      'user-agent': '@anthropic-ai/sdk 1.2.12 node/22.13.1',
+      accept: isStreaming ? 'text/event-stream' : 'application/json',
+      'accept-encoding': 'gzip, deflate',
+    }
+
     if (transformToOpenAIFormat) {
-      const oauthToken = await getAccessToken()
-
-      if (!oauthToken) {
-        return c.json<ErrorResponse>(
-          {
-            error: 'Authentication required',
-            message:
-              'Please authenticate using OAuth first. Visit /auth/login for instructions.',
-          },
-          401,
-        )
-      }
-
-      headers = {
-        'content-type': 'application/json',
-        authorization: `Bearer ${oauthToken}`,
-        'anthropic-beta':
-          'oauth-2025-04-20,fine-grained-tool-streaming-2025-05-14',
-        'anthropic-version': '2023-06-01',
-        'user-agent': '@anthropic-ai/sdk 1.2.12 node/22.13.1',
-        accept: isStreaming ? 'text/event-stream' : 'application/json',
-        'accept-encoding': 'gzip, deflate',
-      }
-
       if (!body.metadata) {
         body.metadata = {}
       }
