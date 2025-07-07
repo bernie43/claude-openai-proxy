@@ -214,6 +214,17 @@ app.post('/v1/chat/completions', async (c: Context) => {
   const body: AnthropicRequestBody = await c.req.json()
   const isStreaming = body.stream === true
 
+  const apiKey = c.req.header('authorization')?.split(' ')?.[1]
+  if (apiKey && apiKey !== process.env.API_KEY) {
+    return c.json(
+      {
+        error: 'Authentication required',
+        message: 'Please authenticate use the API key from the .env file',
+      },
+      401,
+    )
+  }
+
   // Bypass cursor enable openai key check
   if (isCursorKeyCheck(body.model)) {
     return c.json(createCursorBypassResponse())
