@@ -77,6 +77,11 @@ interface OpenAIStreamChunk {
     }
     finish_reason: string | null
   }>
+  usage?: {
+    prompt_tokens: number
+    completion_tokens: number
+    total_tokens: number
+  }
 }
 
 interface OpenAIResponse {
@@ -264,8 +269,17 @@ export function processChunk(
           })
         }
 
-        // Send [DONE] when message stops
+        // Send usage chunk and [DONE] when message stops
         if (data.type === 'message_stop') {
+          // Send usage information chunk before [DONE]
+          const usageChunk = createUsageChunk(state)
+          if (usageChunk) {
+            results.push({
+              type: 'chunk',
+              data: usageChunk,
+            })
+          }
+
           results.push({
             type: 'done',
           })
@@ -328,6 +342,37 @@ function updateMetrics(
 
   if (data?.message?.stop_reason) {
     metricsData.stop_reason = data.message.stop_reason
+  }
+}
+
+// Create usage chunk for OpenAI format
+function createUsageChunk(state: ConverterState): OpenAIStreamChunk | null {
+  // Only send usage if we have token data
+  if (
+    state.metricsData.input_tokens === 0 &&
+    state.metricsData.output_tokens === 0
+  ) {
+    return null
+  }
+
+  return {
+    id: state.metricsData.openAIId || 'chatcmpl-' + Date.now(),
+    object: 'chat.completion.chunk' as const,
+    created: Math.floor(Date.now() / 1000),
+    model: state.metricsData.model || 'claude-unknown',
+    choices: [
+      {
+        index: 0,
+        delta: {},
+        finish_reason: null,
+      },
+    ],
+    usage: {
+      prompt_tokens: state.metricsData.input_tokens,
+      completion_tokens: state.metricsData.output_tokens,
+      total_tokens:
+        state.metricsData.input_tokens + state.metricsData.output_tokens,
+    },
   }
 }
 
