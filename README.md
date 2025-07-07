@@ -51,7 +51,7 @@ This proxy enables you to use your Claude Max subscription directly in IDEs that
 ```mermaid
 graph LR
     A[Your IDE] -->|Requests| B[Proxy Server]
-    B -->|Authenticated| C[Claude Web Interface]
+    B -->|Authenticated| C[Claude Fixed Subscription]
     C -->|Response| B
     B -->|Full Context| A
 ```
