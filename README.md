@@ -54,7 +54,7 @@ graph LR
 
 Deploy instantly with Upstash Redis integration:
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Maol-1997/cursor-claude-connector&integration-ids=oac_V3R1GIpkoJorr6fqyiwdhl17)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Maol-1997/cursor-claude-connector&env=API_KEY&envDescription=Custom%20optional%20key%20for%20enhanced%20security%20protection&envLink=https://github.com/Maol-1997/cursor-claude-connector%23api-key&integration-ids=oac_V3R1GIpkoJorr6fqyiwdhl17)
 
 <!-- The integration-ids parameter includes Upstash's official Vercel integration ID for automatic Redis setup -->
 
@@ -62,7 +62,7 @@ This will:
 
 - ✅ Deploy the proxy to Vercel
 - ✅ Automatically create an Upstash Redis database
-- ✅ Configure all environment variables
+- ✅ Configure all environment variables (including optional API_KEY)
 - ✅ Get you running in under 2 minutes!
 
 ### 📖 Manual Setup Guide
@@ -104,6 +104,7 @@ For detailed instructions or alternative deployment methods, see our **[Deployme
    - Go to Settings → Models
    - Enable "Override OpenAI Base URL"
    - Enter: `http://localhost:9095/v1` (for local) or `https://your-app.vercel.app/v1` (for Vercel)
+   - If you set an API_KEY during deployment, add it to your API key field in Cursor
 
 ## 🎉 Advantages of this solution
 
@@ -115,9 +116,19 @@ For detailed instructions or alternative deployment methods, see our **[Deployme
 | Code Quality   | ⭐⭐⭐        | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐       |
 | Change Control | ✅            | ⚠️          | ✅               |
 
+## 🔐 API Key (Optional)
+
+You can optionally set an `API_KEY` environment variable for additional security:
+
+- If set, Cursor must provide this key in the API key field
+- Adds an extra layer of authentication to your proxy
+- Useful when deploying to public URLs
+- Leave empty to use without additional authentication
+
 ## 🛡️ Security
 
-- No API keys needed - uses your existing Claude session
+- Uses your existing Claude session for authentication
+- Optional API key for additional security
 - Local connection between Cursor and the proxy
 - Open source code for auditing
 
