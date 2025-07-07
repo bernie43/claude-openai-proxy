@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+fimport { Redis } from '@upstash/redis'
 
 interface OAuthCredentials {
   type: 'oauth'
@@ -123,7 +123,7 @@ async function getAccessToken(): Promise<string | null> {
 
   // Check if token is expired
   if (credentials.expires && credentials.expires > Date.now()) {
-    console.log('Token is valid', credentials.access)
+    console.log('Token is valid')
     return credentials.access
   }
 
