@@ -1,48 +1,56 @@
 # 🚀 Cursor-Claude Connector
 
-> **The best of both worlds**: Combine Cursor's powerful IDE with Claude's unlimited potential
+> **Maximize your Claude subscription**: Use Claude's full power in your favorite IDE (like Cursor)
 
-## 🚀 Why combine Cursor IDE with Claude's full power?
+## 🚀 Why use your Claude subscription in an IDE?
 
-Based on discussions on Reddit and developer communities, here's what you get:
+Get the best of both worlds by combining Claude's capabilities with a professional development environment:
 
-### 💡 **Get Claude's highest quality output**
+### 💡 **Claude's Full Capabilities**
 
-- Direct access to Claude's full capabilities
-- Better context understanding without compression
-- Access to the latest Claude models and features
+- Direct access to Claude's latest models and features
+- No token limits from your Claude Max subscription
+- Full context understanding without compression
+- Handle large files and complex projects seamlessly
 
-### 🧠 **Direct model access without limitations**
+### 🛠️ **Professional IDE Experience**
 
-- **No context compression**: Cursor compresses context to save tokens, which can degrade quality
-- **No artificial limits**: No 250-line file restrictions like in Cursor
-- **Full model**: Access to Claude's full power without intermediate layers
+- **Code-first interface**: Built specifically for development workflows
+- **File management**: Navigate and edit multiple files effortlessly
+- **Version control**: Full git integration and change tracking
+- **Extensions & tools**: Access to your IDE's ecosystem
 
-### 💰 **Significant savings**
+### 💰 **Maximize Your Investment**
 
-- Cursor Pro: $20/month + additional usage costs
-- Claude Max: $100-200/month (5x-20x more usage than Pro)
-- **This project**: Use your Claude Max subscription in Cursor = Best value
+- Already paying for Claude Max? Use it everywhere
+- No additional API costs or usage limits
+- One subscription, multiple environments
+- Full value from your Claude subscription
 
-### 🎯 **Better for complex tasks**
+### 🎯 **Perfect for Complex Projects**
 
-- Handle larger context windows and longer conversations
-- Work with complex documents without hitting size restrictions
-- Maintain context throughout extended coding sessions
+- Maintain context across entire codebases
+- Work with large files without restrictions
+- Extended coding sessions without interruptions
+- Professional development workflow
+
+## ⚠️ **Important: Cursor Requirements**
+
+> **Note**: Cursor requires at least the $20/month plan to use agent mode with custom API keys (BYOK - Bring Your Own Key). The free tier only supports basic completions.
 
 ## 🔧 How does this project work?
 
-This proxy allows you to use your Claude Max subscription directly in Cursor, combining:
+This proxy enables you to use your Claude Max subscription directly in IDEs that support OpenAI-compatible APIs:
 
-- ✅ Cursor's familiar and productive interface
-- ✅ Claude's full power without limitations
-- ✅ No additional costs beyond your Claude subscription
+- ✅ Your favorite IDE's interface and features
+- ✅ Claude's full capabilities from your subscription
+- ✅ No additional costs beyond your Claude Max subscription
 
 ### Architecture
 
 ```mermaid
 graph LR
-    A[Cursor IDE] -->|Requests| B[Proxy Server]
+    A[Your IDE] -->|Requests| B[Proxy Server]
     B -->|Authenticated| C[Claude Web Interface]
     C -->|Response| B
     B -->|Full Context| A
@@ -108,13 +116,14 @@ For detailed instructions or alternative deployment methods, see our **[Deployme
 
 ## 🎉 Advantages of this solution
 
-| Feature        | Cursor Alone  | Claude Code | **This Project** |
-| -------------- | ------------- | ----------- | ---------------- |
-| IDE Interface  | ✅            | ❌ Terminal | ✅               |
-| Full Context   | ❌ Compressed | ✅          | ✅               |
-| Monthly Cost   | $20 + usage   | $100-200    | Claude Max only  |
-| Code Quality   | ⭐⭐⭐        | ⭐⭐⭐⭐⭐  | ⭐⭐⭐⭐⭐       |
-| Change Control | ✅            | ⚠️          | ✅               |
+| Feature                 | Claude Web | Claude Code | **This Project**        |
+| ----------------------- | ---------- | ----------- | ----------------------- |
+| IDE Integration         | ❌         | ❌ Terminal | ✅ Full IDE             |
+| File Management         | ❌         | ✅          | ✅ IDE Native           |
+| Claude Max Usage Limits | ✅         | ✅          | ✅ No Additional Limits |
+| Version Control         | ❌         | ⚠️          | ✅ Full Git Integration |
+| Development Extensions  | ❌         | ❌          | ✅ IDE Ecosystem        |
+| Cost                    | Claude Max | Claude Max  | Claude Max Only         |
 
 ## 🔐 API Key (Optional)
 
