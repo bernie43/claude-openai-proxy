@@ -1,4 +1,4 @@
-fimport { Redis } from '@upstash/redis'
+import { Redis } from '@upstash/redis'
 
 interface OAuthCredentials {
   type: 'oauth'
