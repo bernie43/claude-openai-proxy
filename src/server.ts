@@ -208,7 +208,7 @@ app.get('/v1/models', async (c: Context) => {
   }
 })
 
-app.post('/v1/chat/completions', async (c: Context) => {
+const messagesFn = async (c: Context) => {
   let headers: Record<string, string> = c.req.header() as Record<string, string>
   headers.host = 'api.anthropic.com'
   const body: AnthropicRequestBody = await c.req.json()
@@ -399,7 +399,10 @@ app.post('/v1/chat/completions', async (c: Context) => {
       500,
     )
   }
-})
+}
+
+app.post('/v1/chat/completions', messagesFn)
+app.post('/v1/messages', messagesFn)
 
 const port = process.env.PORT || 9095
 
