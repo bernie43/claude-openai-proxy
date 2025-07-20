@@ -1,3 +1,5 @@
+import { AnthropicRequestBody } from "../types";
+
 // Bypass cursor enable openai key check
 export function createCursorBypassResponse() {
   return {
@@ -39,6 +41,13 @@ export function createCursorBypassResponse() {
 }
 
 // Check if the request is from Cursor trying to validate OpenAI key
-export function isCursorKeyCheck(model: string | undefined): boolean {
-  return model?.includes('gpt-4o') ?? false
+export function isCursorKeyCheck(body: AnthropicRequestBody): boolean {
+  return (
+    body.model?.includes('gpt-4o') ||
+    (body.messages &&
+      body.messages.some(
+        (m: any) =>
+          m.content === 'Test prompt using gpt-3.5-turbo',
+      ))
+  ) || false
 }

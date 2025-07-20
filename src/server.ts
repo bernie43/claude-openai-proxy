@@ -226,7 +226,7 @@ const messagesFn = async (c: Context) => {
   }
 
   // Bypass cursor enable openai key check
-  if (isCursorKeyCheck(body.model)) {
+  if (isCursorKeyCheck(body)) {
     return c.json(createCursorBypassResponse())
   }
 
@@ -236,8 +236,10 @@ const messagesFn = async (c: Context) => {
     if (
       !body.system?.[0]?.text?.includes(
         "You are Claude Code, Anthropic's official CLI for Claude.",
-      )
+      ) && body.messages
     ) {
+      const systemMessages = body.messages.filter((msg: any) => msg.role === 'system')
+      body.messages = body.messages?.filter((msg: any) => msg.role !== 'system')
       transformToOpenAIFormat = true // not claude-code, need to transform to openai format
       if (!body.system) {
         body.system = []
@@ -246,6 +248,13 @@ const messagesFn = async (c: Context) => {
         type: 'text',
         text: "You are Claude Code, Anthropic's official CLI for Claude.",
       })
+
+      for (const sysMsg of systemMessages) {
+        body.system.push({
+          type: 'text',
+          text: sysMsg.content || ''
+        })
+      }
 
       if (body.model.includes('opus')) {
         body.max_tokens = 32_000
