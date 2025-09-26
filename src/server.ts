@@ -1,5 +1,7 @@
 import { Hono, Context } from 'hono'
 import { stream } from 'hono/streaming'
+import { readFile } from 'node:fs/promises'
+import { join } from 'node:path'
 import { getAccessToken } from './auth/oauth-manager'
 import {
   login as oauthLogin,
@@ -36,7 +38,26 @@ app.options('*', corsPreflightHandler)
 // Also add CORS headers to all responses
 app.use('*', corsMiddleware)
 
-// Root route is handled by Vercel serving public/index.html
+const indexHtmlPath = join(process.cwd(), 'public', 'index.html')
+let cachedIndexHtml: string | null = null
+
+const getIndexHtml = async () => {
+  if (!cachedIndexHtml) {
+    cachedIndexHtml = await readFile(indexHtmlPath, 'utf-8')
+  }
+  return cachedIndexHtml
+}
+
+// Root route is handled by serving public/index.html directly
+app.get('/', async (c) => {
+  const html = await getIndexHtml()
+  return c.html(html)
+})
+
+app.get('/index.html', async (c) => {
+  const html = await getIndexHtml()
+  return c.html(html)
+})
 
 // New OAuth start endpoint for UI
 app.post('/auth/oauth/start', async (c: Context) => {

@@ -1,7 +1,7 @@
 import { handle } from 'hono/vercel'
 import app from '../src/server'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 // Export handlers for all HTTP methods
 export const GET = handle(app)
