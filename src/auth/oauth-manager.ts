@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import * as fs from "fs";
 
 interface OAuthCredentials {
   type: 'oauth'
@@ -17,55 +17,35 @@ interface TokenResponse {
   expires_in: number
 }
 
-// Initialize Redis client
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || '',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
-})
-
-// Redis key for auth data
-const AUTH_KEY = 'auth:anthropic'
+const configFile = '~/.claude-openai-proxy.json';
 
 async function get(): Promise<OAuthCredentials | null> {
   try {
-    const data = await redis.get<OAuthCredentials>(AUTH_KEY)
+    const data = JSON.parse(fs.readFileSync(configFile, 'utf8'));
     return data
   } catch (error) {
-    console.error('Error getting auth from Redis:', error)
+    console.error('Error reading config:', error)
     return null
   }
 }
 
 async function set(credentials: OAuthCredentials): Promise<boolean> {
   try {
-    await redis.set(AUTH_KEY, credentials)
+    fs.writeFileSync(configFile, JSON.stringify(credentials, null, 2));
     return true
   } catch (error) {
-    console.error('Error saving auth to Redis:', error)
+    console.error('Error saving config:', error)
     throw error
   }
 }
 
 async function remove(): Promise<boolean> {
   try {
-    await redis.del(AUTH_KEY)
+    fs.unlinkSync(configFile);
     return true
   } catch (error) {
-    console.error('Error removing auth from Redis:', error)
+    console.error('Error removing config:', error)
     throw error
-  }
-}
-
-async function getAll(): Promise<AuthData> {
-  try {
-    const credentials = await redis.get<OAuthCredentials>(AUTH_KEY)
-    if (credentials) {
-      return { anthropic: credentials }
-    }
-    return {}
-  } catch (error) {
-    console.error('Error getting all auth from Redis:', error)
-    return {}
   }
 }
 
@@ -136,4 +116,4 @@ async function getAccessToken(): Promise<string | null> {
   return null
 }
 
-export { get, set, remove, getAll, getAccessToken }
+export { get, set, remove, getAccessToken }
