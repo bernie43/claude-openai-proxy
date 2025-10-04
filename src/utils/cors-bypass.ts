@@ -1,39 +1,26 @@
-import { Context } from 'hono'
+import { Request, Response, NextFunction } from 'express'
 
-// Handle CORS preflight requests for all routes
-export const corsPreflightHandler = (c: Context) => {
-  // Allow all origins (you can restrict this to specific origins if needed)
-  c.header('Access-Control-Allow-Origin', '*')
-
-  // Allow all HTTP methods
-  c.header(
-    'Access-Control-Allow-Methods',
-    'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD',
-  )
-
-  // Allow all headers
-  c.header('Access-Control-Allow-Headers', '*')
-
-  // Allow credentials
-  c.header('Access-Control-Allow-Credentials', 'true')
-
-  // Max age for preflight cache (24 hours)
-  c.header('Access-Control-Max-Age', '86400')
-
-  // Return 204 No Content for OPTIONS requests
-  return c.body(null, 204)
+/**
+ * Handles CORS preflight requests (OPTIONS method).
+ * Sets necessary CORS headers and sends a 204 No Content response.
+ */
+export const corsPreflightHandler = (req: Request, res: Response) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD')
+  res.setHeader('Access-Control-Allow-Headers', '*')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  res.setHeader('Access-Control-Max-Age', '86400') // Max age for preflight cache (24 hours)
+  res.sendStatus(204) // Sends 204 No Content and ends the response
 }
 
-// Middleware to add CORS headers to all responses
-export const corsMiddleware = async (c: Context, next: () => Promise<void>) => {
-  await next()
-
-  // Add CORS headers to all responses
-  c.header('Access-Control-Allow-Origin', '*')
-  c.header(
-    'Access-Control-Allow-Methods',
-    'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD',
-  )
-  c.header('Access-Control-Allow-Headers', '*')
-  c.header('Access-Control-Allow-Credentials', 'true')
+/**
+ * Middleware to add CORS headers to all responses for actual requests.
+ * This should be applied after the preflight handler.
+ */
+export const corsMiddleware = (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD')
+  res.setHeader('Access-Control-Allow-Headers', '*')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+  next() // Continues to the next middleware or route handler
 }

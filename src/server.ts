@@ -1,5 +1,4 @@
-import { Hono, Context } from 'hono'
-import { stream } from 'hono/streaming'
+import express, { Request, Response } from 'express'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { getAccessToken } from './auth/oauth-manager'
@@ -28,9 +27,10 @@ import type {
   ModelInfo,
 } from './types'
 
-// Static files are served by Vercel, not needed here
+const app = express()
 
-const app = new Hono()
+// Parse JSON bodies
+app.use(express.json())
 
 // Handle CORS preflight requests for all routes
 app.options('*', corsPreflightHandler)
@@ -49,51 +49,45 @@ const getIndexHtml = async () => {
 }
 
 // Root route is handled by serving public/index.html directly
-app.get('/', async (c) => {
+app.get('/', async (req: Request, res: Response) => {
   const html = await getIndexHtml()
-  return c.html(html)
+  res.setHeader('Content-Type', 'text/html')
+  res.send(html)
 })
 
-app.get('/index.html', async (c) => {
+app.get('/index.html', async (req: Request, res: Response) => {
   const html = await getIndexHtml()
-  return c.html(html)
+  res.setHeader('Content-Type', 'text/html')
+  res.send(html)
 })
 
 // New OAuth start endpoint for UI
-app.post('/auth/oauth/start', async (c: Context) => {
+app.post('/auth/oauth/start', async (req: Request, res: Response) => {
   try {
     const { authUrl, sessionId } = await generateAuthSession()
-
-    return c.json({
+    res.json({
       success: true,
       authUrl,
       sessionId,
     })
   } catch (error) {
-    return c.json<ErrorResponse>(
-      {
-        error: 'Failed to start OAuth flow',
-        message: (error as Error).message,
-      },
-      500,
-    )
+    res.status(500).json({
+      error: 'Failed to start OAuth flow',
+      message: (error as Error).message,
+    } as ErrorResponse)
   }
 })
 
 // New OAuth callback endpoint for UI
-app.post('/auth/oauth/callback', async (c: Context) => {
+app.post('/auth/oauth/callback', async (req: Request, res: Response) => {
   try {
-    const body = await c.req.json()
-    const { code } = body
-
+    const { code } = req.body
     if (!code) {
-      return c.json<ErrorResponse>(
-        {
-          error: 'Missing OAuth code',
-          message: 'OAuth code is required',
-        },
-        400,
-      )
+      res.status(400).json({
+        error: 'Missing OAuth code',
+        message: 'OAuth code is required',
+      } as ErrorResponse)
+      return
     }
 
     // Extract verifier from code if it contains #
@@ -102,69 +96,66 @@ app.post('/auth/oauth/callback', async (c: Context) => {
 
     await handleOAuthCallback(code, verifier)
 
-    return c.json<SuccessResponse>({
+    res.json({
       success: true,
       message: 'OAuth authentication successful',
-    })
+    } as SuccessResponse)
   } catch (error) {
-    return c.json<ErrorResponse>(
-      {
-        error: 'OAuth callback failed',
-        message: (error as Error).message,
-      },
-      500,
-    )
+    res.status(500).json({
+      error: 'OAuth callback failed',
+      message: (error as Error).message,
+    } as ErrorResponse)
   }
 })
 
-app.post('/auth/login/start', async (c: Context) => {
+app.post('/auth/login/start', async (req: Request, res: Response) => {
   try {
     console.log('\n Starting OAuth authentication flow...')
     const result = await oauthLogin()
     if (result) {
-      return c.json<SuccessResponse>({
+      res.json({
         success: true,
         message: 'OAuth authentication successful',
-      })
+      } as SuccessResponse)
     } else {
-      return c.json<SuccessResponse>(
-        { success: false, message: 'OAuth authentication failed' },
-        401,
-      )
+      res.status(401).json({
+        success: false,
+        message: 'OAuth authentication failed',
+      } as SuccessResponse)
     }
   } catch (error) {
-    return c.json<SuccessResponse>(
-      { success: false, message: (error as Error).message },
-      500,
-    )
+    res.status(500).json({
+      success: false,
+      message: (error as Error).message,
+    } as SuccessResponse)
   }
 })
 
-app.get('/auth/logout', async (c: Context) => {
+app.get('/auth/logout', async (req: Request, res: Response) => {
   try {
     await oauthLogout()
-    return c.json<SuccessResponse>({
+    res.json({
       success: true,
       message: 'Logged out successfully',
-    })
+    } as SuccessResponse)
   } catch (error) {
-    return c.json<SuccessResponse>(
-      { success: false, message: (error as Error).message },
-      500,
-    )
+    res.status(500).json({
+      success: false,
+      message: (error as Error).message,
+    } as SuccessResponse)
   }
 })
 
-app.get('/auth/status', async (c: Context) => {
+app.get('/auth/status', async (req: Request, res: Response) => {
   try {
     const token = await getAccessToken()
-    return c.json({ authenticated: !!token })
+    res.json({ authenticated: !!token })
   } catch (error) {
-    return c.json({ authenticated: false })
+    res.json({ authenticated: false })
   }
 })
 
-app.get('/v1/models', async (c: Context) => {
+app.get('/v1/models', async (req: Request, res: Response) => {
   try {
     // Fetch models from models.dev
     const response = await fetch('https://models.dev/api.json', {
@@ -178,10 +169,8 @@ app.get('/v1/models', async (c: Context) => {
     if (!response.ok) {
       const error = await response.text()
       console.error('API Error:', error)
-      return new Response(error, {
-        status: response.status,
-        headers: { 'Content-Type': 'text/plain' },
-      })
+      res.status(response.status).setHeader('Content-Type', 'text/plain').send(error)
+      return
     }
 
     const modelsData = (await response.json()) as any
@@ -189,10 +178,11 @@ app.get('/v1/models', async (c: Context) => {
     // Extract Anthropic models and format them like OpenAI's API would
     const anthropicProvider = modelsData.anthropic
     if (!anthropicProvider || !anthropicProvider.models) {
-      return c.json<ModelsListResponse>({
+      res.json({
         object: 'list',
         data: [],
-      })
+      } as ModelsListResponse)
+      return
     }
 
     // Convert models to OpenAI's format
@@ -219,41 +209,40 @@ app.get('/v1/models', async (c: Context) => {
       data: models,
     }
 
-    return c.json(response_data)
+    res.json(response_data)
   } catch (error) {
     console.error('Proxy error:', error)
-    return c.json<ErrorResponse>(
-      { error: 'Proxy error', details: (error as Error).message },
-      500,
-    )
+    res.status(500).json({
+      error: 'Proxy error',
+      details: (error as Error).message,
+    } as ErrorResponse)
   }
 })
 
-const messagesFn = async (c: Context) => {
-  let headers: Record<string, string> = c.req.header() as Record<string, string>
+const messagesFn = async (req: Request, res: Response) => {
+  let headers: Record<string, string> = req.headers as Record<string, string>
   headers.host = 'api.anthropic.com'
-  const body: AnthropicRequestBody = await c.req.json()
+
+  const body: AnthropicRequestBody = req.body
   const isStreaming = body.stream === true
 
-  const apiKey = c.req.header('authorization')?.split(' ')?.[1]
+  const apiKey = req.headers.authorization?.split(' ')?.[1]
   if (apiKey && apiKey !== process.env.API_KEY) {
-    return c.json(
-      {
-        error: 'Authentication required',
-        message: 'Please authenticate use the API key from the .env file',
-      },
-      401,
-    )
+    res.status(401).json({
+      error: 'Authentication required',
+      message: 'Please authenticate use the API key from the .env file',
+    })
+    return
   }
 
   // Bypass cursor enable openai key check
   if (isCursorKeyCheck(body)) {
-    return c.json(createCursorBypassResponse())
+    res.json(createCursorBypassResponse())
+    return
   }
 
   try {
     let transformToOpenAIFormat = false
-
     if (
       !body.system?.[0]?.text?.includes(
         "You are Claude Code, Anthropic's official CLI for Claude.",
@@ -262,9 +251,11 @@ const messagesFn = async (c: Context) => {
       const systemMessages = body.messages.filter((msg: any) => msg.role === 'system')
       body.messages = body.messages?.filter((msg: any) => msg.role !== 'system')
       transformToOpenAIFormat = true // not claude-code, need to transform to openai format
+
       if (!body.system) {
         body.system = []
       }
+
       body.system.unshift({
         type: 'text',
         text: "You are Claude Code, Anthropic's official CLI for Claude.",
@@ -286,16 +277,13 @@ const messagesFn = async (c: Context) => {
     }
 
     const oauthToken = await getAccessToken()
-
     if (!oauthToken) {
-      return c.json<ErrorResponse>(
-        {
-          error: 'Authentication required',
-          message:
-            'Please authenticate using OAuth first. Visit /auth/login for instructions.',
-        },
-        401,
-      )
+      res.status(401).json({
+        error: 'Authentication required',
+        message:
+          'Please authenticate using OAuth first. Visit /auth/login for instructions.',
+      } as ErrorResponse)
+      return
     }
 
     headers = {
@@ -313,7 +301,6 @@ const messagesFn = async (c: Context) => {
       if (!body.metadata) {
         body.metadata = {}
       }
-
       if (!body.system) {
         body.system = []
       }
@@ -328,22 +315,17 @@ const messagesFn = async (c: Context) => {
     if (!response.ok) {
       const error = await response.text()
       console.error('API Error:', error)
-
       if (response.status === 401) {
-        return c.json<ErrorResponse>(
-          {
-            error: 'Authentication failed',
-            message:
-              'OAuth token may be expired. Please re-authenticate using /auth/login/start',
-            details: error,
-          },
-          401,
-        )
+        res.status(401).json({
+          error: 'Authentication failed',
+          message:
+            'OAuth token may be expired. Please re-authenticate using /auth/login/start',
+          details: error,
+        } as ErrorResponse)
+        return
       }
-      return new Response(error, {
-        status: response.status,
-        headers: { 'Content-Type': 'text/plain' },
-      })
+      res.status(response.status).setHeader('Content-Type', 'text/plain').send(error)
+      return
     }
 
     if (isStreaming) {
@@ -353,81 +335,76 @@ const messagesFn = async (c: Context) => {
           key.toLowerCase() !== 'content-length' &&
           key.toLowerCase() !== 'transfer-encoding'
         ) {
-          c.header(key, value)
+          res.setHeader(key, value)
         }
       })
 
       const reader = response.body!.getReader()
       const decoder = new TextDecoder()
 
-      return stream(c, async (stream) => {
-        const converterState = createConverterState()
-        const enableLogging = false
+      const converterState = createConverterState()
+      const enableLogging = false
 
-        try {
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
 
-            const chunk = decoder.decode(value, { stream: true })
+          const chunk = decoder.decode(value, { stream: true })
 
-            if (transformToOpenAIFormat) {
-              if (enableLogging) {
-                console.log('🔄 [TRANSFORM MODE] Converting to OpenAI format')
-              }
-
-              const results = processChunk(converterState, chunk, enableLogging)
-
-              for (const result of results) {
-                if (result.type === 'chunk') {
-                  const dataToSend = `data: ${JSON.stringify(result.data)}\n\n`
-                  if (enableLogging) {
-                    console.log('✅ [SENDING] OpenAI Chunk:', dataToSend)
-                  }
-                  await stream.write(dataToSend)
-                } else if (result.type === 'done') {
-                  await stream.write('data: [DONE]\n\n')
-                }
-              }
-            } else {
-              await stream.write(chunk)
+          if (transformToOpenAIFormat) {
+            if (enableLogging) {
+              console.log('🔄 [TRANSFORM MODE] Converting to OpenAI format')
             }
+            const results = processChunk(converterState, chunk, enableLogging)
+            for (const result of results) {
+              if (result.type === 'chunk') {
+                const dataToSend = `data: ${JSON.stringify(result.data)}\n\n`
+                if (enableLogging) {
+                  console.log('✅ [SENDING] OpenAI Chunk:', dataToSend)
+                }
+                res.write(dataToSend)
+              } else if (result.type === 'done') {
+                res.write('data: [DONE]\n\n')
+              }
+            }
+          } else {
+            res.write(chunk)
           }
-        } catch (error) {
-          console.error('Stream error:', error)
-        } finally {
-          reader.releaseLock()
         }
-      })
+      } catch (error) {
+        console.error('Stream error:', error)
+      } finally {
+        reader.releaseLock()
+        res.end()
+      }
     } else {
       const responseData = (await response.json()) as AnthropicResponse
 
       if (transformToOpenAIFormat) {
         const openAIResponse = convertNonStreamingResponse(responseData)
-
         response.headers.forEach((value, key) => {
           if (key.toLowerCase() !== 'content-encoding') {
-            c.header(key, value)
+            res.setHeader(key, value)
           }
         })
-
-        return c.json(openAIResponse)
+        res.json(openAIResponse)
+        return
       }
 
       response.headers.forEach((value, key) => {
         if (key.toLowerCase() !== 'content-encoding') {
-          c.header(key, value)
+          res.setHeader(key, value)
         }
       })
-
-      return c.json(responseData)
+      res.json(responseData)
     }
   } catch (error) {
     console.error('Proxy error:', error)
-    return c.json<ErrorResponse>(
-      { error: 'Proxy error', details: (error as Error).message },
-      500,
-    )
+    res.status(500).json({
+      error: 'Proxy error',
+      details: (error as Error).message,
+    } as ErrorResponse)
   }
 }
 
