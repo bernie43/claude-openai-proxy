@@ -33,10 +33,10 @@ const app = express()
 app.use(express.json())
 
 // Handle CORS preflight requests for all routes
-app.options('*', corsPreflightHandler)
+app.options(/(.*)/, corsPreflightHandler)
 
 // Also add CORS headers to all responses
-app.use('*', corsMiddleware)
+app.use(/(.*)/, corsMiddleware)
 
 const indexHtmlPath = join(process.cwd(), 'public', 'index.html')
 let cachedIndexHtml: string | null = null
@@ -411,9 +411,8 @@ const messagesFn = async (req: Request, res: Response) => {
 app.post('/v1/chat/completions', messagesFn)
 app.post('/v1/messages', messagesFn)
 
-const port = process.env.PORT || 9095
+const port = process.env.PORT || 4000
 
-// Export app for Vercel
-export default app
-
-// Server is started differently for local development vs Vercel
+app.listen(port, () => {
+  console.log(`Server listening on http://localhost:${port}`)
+});
