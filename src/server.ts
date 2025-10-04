@@ -227,7 +227,7 @@ const messagesFn = async (req: Request, res: Response) => {
   const isStreaming = body.stream === true
 
   const apiKey = req.headers.authorization?.split(' ')?.[1]
-  if (apiKey && apiKey !== process.env.API_KEY) {
+  if (process.env.API_KEY && apiKey !== process.env.API_KEY) {
     res.status(401).json({
       error: 'Authentication required',
       message: 'Please authenticate use the API key from the .env file',
